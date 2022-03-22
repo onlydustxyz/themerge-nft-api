@@ -55,7 +55,7 @@ function processWhitelistMerkleData(): any {
   const whitelistMerkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
   // Get the root hash of the Merkle Tree.
   const whitelistMerkleRootHash = ethers.utils.hexlify(whitelistMerkleTree.getRoot());
-
+  console.log(`Whitelist Merkle Tree Root: ${whitelistMerkleRootHash}`);
   return {
     whitelistMerkleTree,
     whitelistMerkleRootHash,
