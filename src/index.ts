@@ -8,7 +8,7 @@ import { keccak256 } from "ethers/lib/utils";
 
 const app = express();
 const PORT = 8000;
-const DATA_HOME = process.env.DATA_HOME;
+const WHITELIST_FILE = process.env.WHITELIST_FILE as string;
 
 // Process whitelist
 const whitelistMerkleData = processWhitelistMerkleData();
@@ -55,7 +55,7 @@ function processWhitelistMerkleData(): any {
   const whitelistMerkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
   // Get the root hash of the Merkle Tree.
   const whitelistMerkleRootHash = ethers.utils.hexlify(whitelistMerkleTree.getRoot());
-
+  console.log(`Whitelist Merkle Tree Root: ${whitelistMerkleRootHash}`);
   return {
     whitelistMerkleTree,
     whitelistMerkleRootHash,
@@ -64,7 +64,7 @@ function processWhitelistMerkleData(): any {
 }
 
 function getWhitelist(): any {
-  const whitelistData = readFileSync(`${DATA_HOME}/whitelist.json`).toString();
+  const whitelistData = readFileSync(WHITELIST_FILE).toString();
   return JSON.parse(whitelistData).whitelist;
 }
 
