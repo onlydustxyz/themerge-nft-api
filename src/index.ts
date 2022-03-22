@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { readFileSync } from "fs";
 import { ethers } from "ethers";
 import { MerkleTree } from "merkletreejs";
@@ -12,7 +13,8 @@ const DATA_HOME = process.env.DATA_HOME;
 // Process whitelist
 const whitelistMerkleData = processWhitelistMerkleData();
 const whitelistMerkleTree = whitelistMerkleData.whitelistMerkleTree;
-
+// Enable ALL CORS requests
+app.use(cors());
 // Serve static files
 app.use("/static", express.static("public"));
 // Handle Index
