@@ -42,7 +42,7 @@ const proofGenerationEndpoint = defaultEndpointsFactory.build({
   method: 'get',
   input: z.object({
     address: z.string(),
-    types: z.array(z.number()),
+    types: z.array(z.string()).transform(types => types.map(parseInt)),
   }),
   output: z.object({
     proof: z.array(z.string()),
