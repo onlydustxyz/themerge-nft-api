@@ -17,4 +17,24 @@ describe('The API', () => {
     } = await response.body;
     expect(greeting).to.equal('Ethereum - The Merge NFT by Magic Dust');
   });
+
+  it('provides the merkle proof when the input address is in the whitelist', async () => {
+    const {
+      body: {
+        status,
+        data: {proof},
+      },
+    } = await chai
+      .request(app)
+      .get(
+        '/proof?address=0xfBFd04eA14735Ca7898B212b9CcA741134B5491a&types[]=1'
+      );
+
+    expect(status).to.equal('success');
+    expect(proof).to.deep.equal([
+      '0xfb94efb36a585ccc50951199300331806da0d6a216d07cc82dda4229a19d0a96',
+      '0x27f2a2e4049be717e5e8c7a112ab69241ca7e69f231fb0e134ad9afd75ae8a6b',
+      '0x0db74d7a103e91f094cb3054c78220af62cb9f5e6248ed0df7ecb82f2515b74b',
+    ]);
+  });
 });
