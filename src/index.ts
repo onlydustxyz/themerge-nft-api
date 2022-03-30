@@ -1,45 +1,84 @@
-import express, {Request, Response} from 'express';
-import cors from 'cors';
 import {readFileSync} from 'fs';
 import {ethers} from 'ethers';
 import {MerkleTree} from 'merkletreejs';
 import {} from 'keccak256';
 import {keccak256} from 'ethers/lib/utils';
+import {
+  createConfig,
+  defaultEndpointsFactory,
+  Routing,
+  z,
+  createServer,
+  ServeStatic,
+} from 'express-zod-api';
+import {Handler} from 'express-zod-api/dist/endpoint';
+import path from 'path';
 
-const app = express();
-const PORT = 8000;
 const WHITELIST_FILE = process.env.WHITELIST_FILE as string;
+
+const config = createConfig({
+  server: {
+    listen: process.env.PORT ? parseInt(process.env.PORT) : 8000,
+  },
+  cors: true,
+  logger: {
+    level: 'debug',
+    color: true,
+  },
+});
+
+const handleProofGeneration: Handler<
+  {address: string; types: number[]},
+  {proof: string[]},
+  {}
+> = async ({input: {address, types}, logger}) => {
+  logger.debug(`Generating proof for ${address} and types ${types}`);
+  const proof = generateProof(address, types);
+
+  return {proof};
+};
+
+const proofGenerationEndpoint = defaultEndpointsFactory.build({
+  method: 'get',
+  input: z.object({
+    address: z.string(),
+    types: z.array(z.number()),
+  }),
+  output: z.object({
+    proof: z.array(z.string()),
+  }),
+  handler: handleProofGeneration,
+});
+
+const greetingEndpoint = defaultEndpointsFactory.build({
+  method: 'get',
+  input: z.object({}),
+  output: z.object({
+    greeting: z.string(),
+  }),
+  handler: async () => {
+    return {greeting: 'Ethereum - The Merge NFT by Magic Dust'};
+  },
+});
+
+const routing: Routing = {
+  proof: proofGenerationEndpoint,
+  static: new ServeStatic(path.join(__dirname, 'public'), {
+    dotfiles: 'deny',
+    index: false,
+    redirect: false,
+  }),
+  '': greetingEndpoint,
+};
+
+export const {app, logger, httpServer} = createServer(config, routing);
 
 // Process whitelist
 const whitelistMerkleData = processWhitelistMerkleData();
 const whitelistMerkleTree = whitelistMerkleData.whitelistMerkleTree;
-// Enable ALL CORS requests
-app.use(cors());
-// Serve static files
-app.use('/static', express.static('public'));
-// Handle Index
-app.get('/', (req, res) => res.send('Ethereum - The Merge NFT by Magic Dust'));
-// Handle Generate Proof
-app.get('/proof/:address/type/:nftType', handleGenerateProof);
-// Start HTTP server
-app.listen(PORT, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
-});
 
-function handleGenerateProof(req: Request, res: Response) {
-  const address = req.params.address;
-  const nftType = req.params.nftType;
-  console.log(
-    `generate proof requested for address: ${address} and NFT type: ${nftType}`
-  );
-  const proofData = {
-    proof: generateProof(address, +nftType),
-  };
-  res.json(proofData);
-}
-
-function generateProof(address: string, nftType: number): string[] {
-  const leafData = keccak256(generateLeafData(address, nftType));
+function generateProof(address: string, types: number[]): string[] {
+  const leafData = keccak256(generateLeafData(address, types));
   return whitelistMerkleTree.getHexProof(leafData);
 }
 
@@ -49,7 +88,7 @@ function processWhitelistMerkleData() {
   for (const i in whitelistedAccounts) {
     const whitelistedAccount = whitelistedAccounts[i];
     whitelistLeafData.push(
-      generateLeafData(whitelistedAccount.address, whitelistedAccount.nftType)
+      generateLeafData(whitelistedAccount.address, whitelistedAccount.types)
     );
   }
   // Build leaf nodes from whitelisted addresses.
@@ -63,7 +102,7 @@ function processWhitelistMerkleData() {
   const whitelistMerkleRootHash = ethers.utils.hexlify(
     whitelistMerkleTree.getRoot()
   );
-  console.log(`Whitelist Merkle Tree Root: ${whitelistMerkleRootHash}`);
+  logger.info(`Whitelist Merkle Tree Root: ${whitelistMerkleRootHash}`);
   return {
     whitelistMerkleTree,
     whitelistMerkleRootHash,
@@ -76,8 +115,8 @@ function getWhitelist() {
   return JSON.parse(whitelistData).whitelist;
 }
 
-function generateLeafData(address: string, nftType: number): string {
-  return ethers.utils.hexConcat([address, toBytes32(nftType)]);
+function generateLeafData(address: string, types: number[]): string {
+  return ethers.utils.hexConcat([address, ...types.map(toBytes32)]);
 }
 
 function toBytes32(value: number): string {
