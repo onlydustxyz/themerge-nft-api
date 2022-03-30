@@ -18,7 +18,7 @@ for (let i = 0; i < numberOfAccounts; i++) {
   const address = wallet.address;
   whitelistedWallets.push({
     address,
-    nftType: '1',
+    types: [1],
   });
 }
 
@@ -44,5 +44,5 @@ type Whitelist = {
 
 type WhitelistedAccount = {
   address: string;
-  nftType: string;
+  types: number[];
 };
