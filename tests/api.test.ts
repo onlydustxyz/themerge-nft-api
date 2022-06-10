@@ -9,32 +9,23 @@ describe('The API', () => {
     httpServer.close();
   });
 
-  it('responds with a greeting on the greeting path', async () => {
-    const response = await chai.request(app).get('/');
-
-    const {
-      data: {greeting},
-    } = await response.body;
-    expect(greeting).to.equal('Ethereum - The Merge NFT by Magic Dust');
-  });
-
   it('provides the merkle proof when the input address is in the whitelist', async () => {
     const {
       body: {
         status,
-        data: {proof},
+        data: {proof, types},
       },
     } = await chai
       .request(app)
-      .get(
-        '/proof?address=0xfBFd04eA14735Ca7898B212b9CcA741134B5491a&types[]=1'
-      );
+      .get('/proof?address=0xfBFd04eA14735Ca7898B212b9CcA741134B5491a');
 
     expect(status).to.equal('success');
     expect(proof).to.deep.equal([
-      '0xfb94efb36a585ccc50951199300331806da0d6a216d07cc82dda4229a19d0a96',
-      '0x27f2a2e4049be717e5e8c7a112ab69241ca7e69f231fb0e134ad9afd75ae8a6b',
-      '0x0db74d7a103e91f094cb3054c78220af62cb9f5e6248ed0df7ecb82f2515b74b',
+      '0x57d7d5137fadc7fd6db314eed0fa8c4756da912ba5fc556c1924f38159f01b33',
+      '0x88733d6b1a55e63068c84389221a0cfc089e3d4ef3a7378915ee0c54cef8f819',
+      '0x01e7b53ec828cb7063893b163228582e7d6b99320b882ea233961f9d5894a9d0',
+      '0x8f47b1f17c94e87bf35cd83515c79a8abc3ff3f1a6f7d3438bb42b0f609f8931',
     ]);
+    expect(types).to.deep.equal([1]);
   });
 });

@@ -44,6 +44,7 @@
     "express": "^4.17.3",
     "express-zod-api": "^6.0.2",
     "keccak256": "^1.0.6",
-    "merkletreejs": "^0.2.31"
+    "merkletreejs": "^0.2.31",
+    "winston": "^3.7.2"
   }
 }
