@@ -48,7 +48,7 @@ export const generateProofFor = async (
   address: string,
   nftTypes: number[]
 ): Promise<string[]> => {
-  const leafData = keccak256(generateLeafData(address, nftTypes));
+  const leafData = generateLeafData(address, nftTypes);
   const merkleTree = await memoizedMerkleTree();
   return merkleTree.getHexProof(leafData);
 };
