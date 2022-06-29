@@ -5,10 +5,12 @@ import {
   z,
   createServer,
   ServeStatic,
+  createHttpError,
 } from 'express-zod-api';
 import {Handler} from 'express-zod-api/dist/endpoint';
 import path from 'path';
 import {generateProofFor} from './whitelist/merkle-tree';
+import {memoizedWhitelist} from './whitelist/reader';
 
 const config = createConfig({
   server: {
@@ -22,24 +24,29 @@ const config = createConfig({
 });
 
 const handleProofGeneration: Handler<
-  {address: string; types: number[]},
-  {proof: string[]},
+  {address: string},
+  {proof: string[]; types: number[]},
   {}
-> = async ({input: {address, types}, logger}) => {
-  logger.debug(`Generating proof for ${address} and types ${types}`);
-  const proof = await generateProofFor(address, types);
+> = async ({input: {address}, logger}) => {
+  const whitelist = await memoizedWhitelist();
+  const nftTypes = whitelist.find(entry => entry.address === address)?.nftTypes;
+  if (!nftTypes) {
+    throw createHttpError(403, 'Your address is not whitelisted');
+  }
+  logger.debug(`Generating proof for ${address} and types ${nftTypes}`);
+  const proof = await generateProofFor(address, nftTypes);
 
-  return {proof};
+  return {proof, types: nftTypes};
 };
 
 const proofGenerationEndpoint = defaultEndpointsFactory.build({
   method: 'get',
   input: z.object({
     address: z.string(),
-    types: z.array(z.string()).transform(types => types.map(parseInt)),
   }),
   output: z.object({
     proof: z.array(z.string()),
+    types: z.array(z.number()),
   }),
   handler: handleProofGeneration,
 });

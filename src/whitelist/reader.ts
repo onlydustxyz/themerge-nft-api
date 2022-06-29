@@ -14,6 +14,16 @@ export const readWhitelist = async (path: string): Promise<WhiteList> => {
   }));
 };
 
+let whitelist: WhiteList;
+
+export const memoizedWhitelist = async () => {
+  if (whitelist) {
+    return whitelist;
+  }
+  whitelist = await readWhitelist(process.env.WHITELIST_PATH as string);
+  return whitelist;
+};
+
 export const unpackNftTypes = (packedValue: number): number[] => {
   const result = [];
   let currentBit = 0;
