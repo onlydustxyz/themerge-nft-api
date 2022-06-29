@@ -15,7 +15,7 @@ describe('The API', () => {
     const {
       data: {greeting},
     } = await response.body;
-    expect(greeting).to.equal('Ethereum - The Merge NFT by Magic Dust');
+    expect(greeting).to.be.a('string');
   });
 
   it('provides the merkle proof when the input address is in the whitelist', async () => {
@@ -27,7 +27,7 @@ describe('The API', () => {
     } = await chai
       .request(app)
       .get(
-        '/proof?address=0xfBFd04eA14735Ca7898B212b9CcA741134B5491a&types[]=1'
+        '/proof?address=0xEb5576e75C88214828f2F43313f7DB79bD7b1365&types[]=0'
       );
 
     expect(status).to.equal('success');

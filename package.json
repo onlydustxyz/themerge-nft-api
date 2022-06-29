@@ -13,7 +13,7 @@
     "start": "node build/src/index.js",
     "utils:gen-whitelist": "ts-node src/utils/gen_rng_whitelist.ts",
     "dev:server": "nodemon --watch './**/*.ts' --exec 'ts-node -r dotenv/config' src/index.ts",
-    "test": "WHITELIST_FILE=public/whitelist.json mocha -r ts-node/register tests/**/*.test.ts",
+    "test": "WHITELIST_PATH=tests/test-whitelist.json mocha -r ts-node/register tests/**/*.test.ts",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",

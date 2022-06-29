@@ -1,8 +1,3 @@
-import {readFileSync} from 'fs';
-import {ethers} from 'ethers';
-import {MerkleTree} from 'merkletreejs';
-import {} from 'keccak256';
-import {keccak256} from 'ethers/lib/utils';
 import {
   createConfig,
   defaultEndpointsFactory,
@@ -13,8 +8,7 @@ import {
 } from 'express-zod-api';
 import {Handler} from 'express-zod-api/dist/endpoint';
 import path from 'path';
-
-const WHITELIST_FILE = process.env.WHITELIST_FILE as string;
+import {generateProofFor} from './whitelist/merkle-tree';
 
 const config = createConfig({
   server: {
@@ -33,7 +27,7 @@ const handleProofGeneration: Handler<
   {}
 > = async ({input: {address, types}, logger}) => {
   logger.debug(`Generating proof for ${address} and types ${types}`);
-  const proof = generateProof(address, types);
+  const proof = await generateProofFor(address, types);
 
   return {proof};
 };
@@ -57,7 +51,7 @@ const greetingEndpoint = defaultEndpointsFactory.build({
     greeting: z.string(),
   }),
   handler: async () => {
-    return {greeting: 'Ethereum - The Merge NFT by Magic Dust'};
+    return {greeting: 'Ethereum - The Merge NFT by OnlyDust'};
   },
 });
 
@@ -72,53 +66,3 @@ const routing: Routing = {
 };
 
 export const {app, logger, httpServer} = createServer(config, routing);
-
-// Process whitelist
-const whitelistMerkleData = processWhitelistMerkleData();
-const whitelistMerkleTree = whitelistMerkleData.whitelistMerkleTree;
-
-function generateProof(address: string, types: number[]): string[] {
-  const leafData = keccak256(generateLeafData(address, types));
-  return whitelistMerkleTree.getHexProof(leafData);
-}
-
-function processWhitelistMerkleData() {
-  const whitelistLeafData = [];
-  const whitelistedAccounts = getWhitelist();
-  for (const i in whitelistedAccounts) {
-    const whitelistedAccount = whitelistedAccounts[i];
-    whitelistLeafData.push(
-      generateLeafData(whitelistedAccount.address, whitelistedAccount.types)
-    );
-  }
-  // Build leaf nodes from whitelisted addresses.
-  const leafNodes = whitelistLeafData.map(addr => keccak256(addr));
-
-  // Build the Merkle Tree.
-  const whitelistMerkleTree = new MerkleTree(leafNodes, keccak256, {
-    sortPairs: true,
-  });
-  // Get the root hash of the Merkle Tree.
-  const whitelistMerkleRootHash = ethers.utils.hexlify(
-    whitelistMerkleTree.getRoot()
-  );
-  logger.info(`Whitelist Merkle Tree Root: ${whitelistMerkleRootHash}`);
-  return {
-    whitelistMerkleTree,
-    whitelistMerkleRootHash,
-    leafNodes,
-  };
-}
-
-function getWhitelist() {
-  const whitelistData = readFileSync(WHITELIST_FILE).toString();
-  return JSON.parse(whitelistData).whitelist;
-}
-
-function generateLeafData(address: string, types: number[]): string {
-  return ethers.utils.hexConcat([address, ...types.map(toBytes32)]);
-}
-
-function toBytes32(value: number): string {
-  return ethers.utils.hexZeroPad(ethers.utils.hexlify(value), 32);
-}
