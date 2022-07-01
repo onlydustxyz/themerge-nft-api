@@ -37,7 +37,7 @@ describe('The API', () => {
       },
     } = await chai
       .request(app)
-      .get('/proof?address=0x1224E844C1374a8eABf7eC32EC02f41d335ad2Ca');
+      .get('/proof?address=0x1224E844C1374A8eABf7eC32EC02f41d335ad2Ca');
 
     expect(status).to.equal('success');
     expect(types).to.deep.equal([0, 2, 3]);
@@ -51,7 +51,7 @@ describe('The API', () => {
       },
     } = await chai
       .request(app)
-      .get('/proof?address=0xEb5576e75C88214828f2F43313f7DB79bD7b1365');
+      .get('/proof?address=0xEb5576E75C88214828f2F43313f7DB79bD7b1365');
 
     expect(status).to.equal('success');
     expect(proof).to.deep.equal([
