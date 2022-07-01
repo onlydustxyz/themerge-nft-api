@@ -17,7 +17,9 @@ export const generateWhitelistMerkleTree = (
 };
 
 const generateLeafData = (address: string, types: number[]): string => {
-  return keccak256(ethers.utils.hexConcat([address, ...types.map(toBytes32)]));
+  return keccak256(
+    ethers.utils.hexConcat([address.toLowerCase(), ...types.map(toBytes32)])
+  );
 };
 
 const toBytes32 = (value: number): string => {

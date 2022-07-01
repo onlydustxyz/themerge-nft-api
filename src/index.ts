@@ -29,7 +29,9 @@ const handleProofGeneration: Handler<
   {}
 > = async ({input: {address}, logger}) => {
   const whitelist = await memoizedWhitelist();
-  const nftTypes = whitelist.find(entry => entry.address === address)?.nftTypes;
+  const nftTypes = whitelist.find(
+    entry => entry.address.toLowerCase() === address
+  )?.nftTypes;
   if (!nftTypes) {
     throw createHttpError(403, 'Your address is not whitelisted');
   }
@@ -42,7 +44,7 @@ const handleProofGeneration: Handler<
 const proofGenerationEndpoint = defaultEndpointsFactory.build({
   method: 'get',
   input: z.object({
-    address: z.string(),
+    address: z.string().transform(address => address.toLowerCase()),
   }),
   output: z.object({
     proof: z.array(z.string()),
