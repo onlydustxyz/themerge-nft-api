@@ -7,8 +7,8 @@ import {readWhitelist, WhiteList} from './reader';
 export const generateWhitelistMerkleTree = (
   whitelist: WhiteList
 ): MerkleTree => {
-  const leaves = whitelist.map(({address, nftTypes}) =>
-    generateLeafData(address, nftTypes)
+  const leaves = whitelist.map(({address, packedNftTypes}) =>
+    generateLeafData(address, packedNftTypes)
   );
   const whitelistMerkleTree = new MerkleTree(leaves, keccak256, {
     sortPairs: true,
@@ -16,9 +16,9 @@ export const generateWhitelistMerkleTree = (
   return whitelistMerkleTree;
 };
 
-const generateLeafData = (address: string, types: number[]): string => {
+const generateLeafData = (address: string, packedNftTypes: number): string => {
   return keccak256(
-    ethers.utils.hexConcat([address.toLowerCase(), ...types.map(toBytes32)])
+    ethers.utils.hexConcat([address.toLowerCase(), toBytes32(packedNftTypes)])
   );
 };
 
@@ -48,9 +48,9 @@ const memoizedMerkleTree = async () => {
 
 export const generateProofFor = async (
   address: string,
-  nftTypes: number[]
+  packedNftTypes: number
 ): Promise<string[]> => {
-  const leafData = generateLeafData(address, nftTypes);
+  const leafData = generateLeafData(address, packedNftTypes);
   const merkleTree = await memoizedMerkleTree();
   return merkleTree.getHexProof(leafData);
 };

@@ -10,7 +10,7 @@ import {
 import {Handler} from 'express-zod-api/dist/endpoint';
 import path from 'path';
 import {generateProofFor} from './whitelist/merkle-tree';
-import {memoizedWhitelist} from './whitelist/reader';
+import {memoizedWhitelist, unpackNftTypes} from './whitelist/reader';
 
 const config = createConfig({
   server: {
@@ -29,14 +29,15 @@ const handleProofGeneration: Handler<
   {}
 > = async ({input: {address}, logger}) => {
   const whitelist = await memoizedWhitelist();
-  const nftTypes = whitelist.find(
+  const packedNftTypes = whitelist.find(
     entry => entry.address.toLowerCase() === address
-  )?.nftTypes;
-  if (!nftTypes) {
+  )?.packedNftTypes;
+  if (!packedNftTypes) {
     throw createHttpError(403, 'Your address is not whitelisted');
   }
+  const nftTypes = unpackNftTypes(packedNftTypes);
   logger.debug(`Generating proof for ${address} and types ${nftTypes}`);
-  const proof = await generateProofFor(address, nftTypes);
+  const proof = await generateProofFor(address, packedNftTypes);
 
   return {proof, types: nftTypes};
 };
