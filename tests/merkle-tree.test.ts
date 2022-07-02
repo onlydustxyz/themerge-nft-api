@@ -11,7 +11,7 @@ describe('The merkle tree computation', () => {
     const whitelist: WhiteList = [
       {
         address: '0x2c9758BDe2DBc7F6a259a5826a85761FcE322708',
-        nftTypes: [0, 1, 2, 3, 4, 5, 6],
+        packedNftTypes: 127,
       },
     ];
     const merkleTree = generateWhitelistMerkleTree(whitelist);
@@ -25,11 +25,11 @@ describe('The merkle tree computation', () => {
     const merkleTree = await getMerkleTree(fixtureWhitelistPath);
 
     expect(merkleTree.getDepth()).to.equal(2);
-    expect(merkleTree.getLeafCount()).to.equal(3);
+    expect(merkleTree.getLeafCount()).to.equal(4);
 
     const merkleRoot = ethers.utils.hexlify(merkleTree.getRoot());
     expect(merkleRoot).to.equal(
-      '0x1231ef97f498d2021769f00cd842695f991d0144d798c8d7c3e11c860f4a68cf'
+      '0x3481fd119b5a1fedb3c737d29da0ee4b01e1e05e26e6c848c5f345c6cce44c22'
     );
   });
 });

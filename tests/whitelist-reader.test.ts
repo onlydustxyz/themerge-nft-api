@@ -14,9 +14,11 @@ describe('The whitelist reader', () => {
     const whitelist = await readWhitelist(whitelistPath);
 
     const firstAddress = '0xDEC21982F07E8bff9b4c8FA8d18e550De0FACDDd';
-    const firstNftTypes = whitelist.find(
+    const firstPackedNftTypes = whitelist.find(
       entry => entry.address.toLowerCase() === firstAddress.toLocaleLowerCase()
-    )?.nftTypes;
-    expect(firstNftTypes).to.deep.equal([0, 1, 2, 3, 5]);
+    )?.packedNftTypes;
+    expect(firstPackedNftTypes).to.deep.equal(
+      2 ** 0 + 2 ** 1 + 2 ** 2 + 2 ** 3 + 2 ** 5
+    );
   });
 });

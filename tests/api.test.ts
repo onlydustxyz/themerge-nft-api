@@ -55,8 +55,8 @@ describe('The API', () => {
 
     expect(status).to.equal('success');
     expect(proof).to.deep.equal([
-      '0x08a9598a94f417d6792ba7a15ab4307d4b7ccd5f0abdf9cbbc46f2e4fd517b3d',
-      '0xd81cb71f80bcb35027632cccfe5d966429e0cb5f78f27991ff2e96b05d028a1a',
+      '0x9532d0f398f26187060e2952d67e71802d4904df3f38455addb17ff383cec9c0',
+      '0x2349e2a08949a1c9b4f4a41c090a28ea394f3aa24d793209146455325a6ca2dc',
     ]);
   });
 });
